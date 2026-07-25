@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Al Ihsan Dairies — Admin</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--teal-deep:#06453d;--teal:#0a6b5e;--gold:#cfa33a;--gold-soft:#e8c776;--gold-deep:#9a7528;--cream:#fdf8ef;--ink:#1a1a1a;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Outfit',sans-serif;background:linear-gradient(170deg,#1a1a1a,#1a2e2a);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:3rem 6vw;}
+    h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2.2rem,5vw,3.5rem);color:var(--gold-soft);text-align:center;margin-bottom:0.2rem;}
+    .sub-head{font-family:'Noto Nastaliq Urdu',serif;color:rgba(255,255,255,0.55);text-align:center;margin-bottom:2.5rem;font-size:1.05rem;}
+    .auth-box{background:rgba(255,255,255,0.04);border:1px solid rgba(207,163,58,0.2);border-radius:1.2rem;padding:2.5rem;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,0.25);backdrop-filter:blur(8px);margin-bottom:2rem;}
+    .auth-box h2{font-family:'Cormorant Garamond',serif;color:var(--gold-soft);margin-bottom:1.2rem;font-size:1.5rem;}
+    .auth-box label{display:block;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.6);margin-bottom:0.3rem;margin-top:0.9rem;}
+    .auth-box input{width:100%;padding:0.85rem 1rem;border:1.5px solid rgba(207,163,58,0.2);border-radius:10px;background:rgba(255,255,255,0.06);color:#fff;font-family:inherit;font-size:0.95rem;}
+    .auth-box input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(207,163,58,0.15);}
+    .auth-box button{margin-top:1.5rem;width:100%;padding:1rem;background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#fff;border:none;border-radius:100px;font-weight:600;cursor:pointer;font-size:1rem;letter-spacing:0.04em;transition:transform 0.2s,box-shadow 0.2s;}
+    .auth-box button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(207,163,58,0.35);}
+    .hidden{display:none;}
+    .admin-grid{max-width:1100px;width:100%;display:grid;gap:1.2rem;}
+    .order-card{background:rgba(255,255,255,0.04);border:1px solid rgba(207,163,58,0.15);border-radius:1rem;padding:1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;transition:border-color 0.2s;backdrop-filter:blur(6px);}
+    .order-card:hover{border-color:rgba(207,163,58,0.4);}
+    .order-card h4{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold-soft);margin-bottom:0.3rem;}
+    .order-card .label{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.45);margin-top:0.8rem;}
+    .status-select{padding:0.45rem 0.8rem;border-radius:8px;border:1px solid rgba(207,163,58,0.3);background:rgba(255,255,255,0.06);color:#fff;font-family:inherit;font-size:0.85rem;margin-top:0.3rem;}
+    .status-select option{background:var(--ink);color:#fff;}
+    .badge{display:inline-block;padding:0.2rem 0.7rem;border-radius:100px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;background:rgba(207,163,58,0.15);color:var(--gold-soft);border:1px solid rgba(207,163,58,0.25);}
+    .location-link{display:inline-block;margin-top:0.4rem;font-size:0.82rem;color:var(--gold-soft);text-decoration:none;border-bottom:1px solid rgba(207,163,58,0.3);transition:color 0.2s;}
+    .location-link:hover{color:#fff;}
+    .empty-state{text-align:center;opacity:0.55;padding:3rem 1rem;font-family:'Cormorant Garamond',serif;font-size:1.3rem;}
+  </style>
+</head>
+<body>
+
+  <h1>Al Ihsan <span style="color:var(--gold);font-style:italic;">Dairies</span></h1>
+  <p class="sub-head">Admin Panel — صرف فعال آرڈرز دیکھیں</p>
+
+  <div id="auth-box" class="auth-box">
+    <h2>Administrator Access</h2>
+    <form onsubmit="authenticate(event)">
+      <label for="adminPass">Access Key</label>
+      <input type="password" id="adminPass" placeholder="Enter admin access key" required>
+      <button type="submit"><i class="fa-solid fa-lock-open"></i> Unlock Panel</button>
+    </form>
+    <p style="margin-top:1rem;font-size:0.78rem;color:rgba(255,255,255,0.35);">Default key: <strong>alihsan2026</strong> (change in code for production)</p>
+  </div>
+
+  <div id="admin-panel" class="hidden">
+    <div style="text-align:center;margin-bottom:1.5rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <span class="badge">Live Firebase Data</span>
+      <button onclick="logout()" style="background:none;border:1px solid rgba(207,163,58,0.3);color:var(--gold-soft);padding:0.4rem 1rem;border-radius:100px;cursor:pointer;font-size:0.85rem;font-family:inherit;">Log Out</button>
+    </div>
+    <div class="admin-grid" id="admin-grid" aria-label="Orders list"></div>
+  </div>
+
+  <script>
+    // ===== FIREBASE CONFIG — REPLACE WITH YOUR PROJECT =====
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    // Initialize if config looks real; otherwise show alert
+    try {
+      if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+        console.warn("Firebase config not set. Using demo mode with local fallback.");
+      }
+      firebase.initializeApp(firebaseConfig);
+      window.db = firebase.firestore();
+      window.dbEnabled = true;
+    } catch(e) {
+      console.error("Firebase init failed:", e);
+      window.dbEnabled = false;
+    }
+
+    const ADMIN_KEY = "alihsan2026";
+    const statusOptions = ["packing","handed over to delivery service","out for delivery","cancelled","delivered"];
+
+    function authenticate(e) {
+      e.preventDefault();
+      const val = document.getElementById('adminPass').value.trim();
+      if (val === ADMIN_KEY) {
+        document.getElementById('auth-box').classList.add('hidden');
+        document.getElementById('admin-panel').classList.remove('hidden');
+        loadOrders();
+      } else {
+        alert("Invalid access key. Default is alihsan2026 for demo.");
+      }
+    }
+
+    function logout() {
+      document.getElementById('admin-panel').classList.add('hidden');
+      document.getElementById('auth-box').classList.remove('hidden');
+      document.getElementById('adminPass').value = '';
+    }
+
+    function loadOrders() {
+      if (!window.dbEnabled) {
+        document.getElementById('admin-grid').innerHTML = `<div class="empty-state">Firebase not configured. Please set your Firebase project config in the HTML file.</div>`;
+        return;
+      }
+      // Real-time listener
+      window.db.collection("orders").orderBy("createdAt","desc").onSnapshot(snapshot => {
+        const grid = document.getElementById('admin-grid');
+        if (snapshot.empty) {
+          grid.innerHTML = `<div class="empty-state">No orders found. Orders will appear here automatically when customers submit.</div>`;
+          return;
+        }
+        let html = '';
+        snapshot.forEach(doc => {
+          const o = doc.data();
+          html += `
+          <div class="order-card" aria-label="Order ${o.id || doc.id}">
+            <div>
+              <h4>${o.id || doc.id}</h4>
+              <p style="font-size:0.9rem;color:rgba(255,255,255,0.85);">${o.name || 'N/A'}</p>
+              <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);">${o.contact || 'N/A'}</p>
+              <p class="label">Time / وقت</p>
+              <p style="font-size:0.82rem;color:rgba(255,255,255,0.7);">${o.time || new Date(o.createdAt?.toDate?.() || Date.now()).toLocaleString('en-GB',{timeZone:'Asia/Karachi'})}</p>
+            </div>
+            <div>
+              <p class="label">Address / پتہ</p>
+              <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${o.address || 'N/A'}</p>
+              <p class="label">Location / مقام</p>
+              <p style="font-size:0.82rem;color:rgba(255,255,255,0.7);">${o.location || 'Not provided'}</p>
+              ${o.location ? `<a class="location-link" href="${o.location.startsWith('http') ? o.location : 'https://maps.google.com/?q=' + encodeURIComponent(o.location)}" target="_blank"><i class="fa-solid fa-location-dot"></i> Open Map</a>` : ''}
+            </div>
+            <div>
+              <p class="label">Order Summary</p>
+              <p style="font-size:0.9rem;color:rgba(255,255,255,0.9);">${o.qty || 0} KG × 3500 PKR</p>
+              <p style="font-size:1.1rem;color:var(--gold-soft);font-weight:600;">${(o.qty || 0) * 3500} PKR</p>
+              <p class="label">Payment</p>
+              <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${o.payment || 'N/A'}</p>
+            </div>
+            <div>
+              <p class="label">Status / حالت</p>
+              <select class="status-select" onchange="updateStatus('${doc.id}', this.value)">
+                ${statusOptions.map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+              </select>
+              <p style="margin-top:0.6rem;font-size:0.78rem;color:rgba(255,255,255,0.35);">Firebase sync active</p>
+            </div>
+          </div>`;
+        });
+        grid.innerHTML = html;
+      }, err => {
+        console.error(err);
+        grid.innerHTML = `<div class="empty-state">Error loading orders: ${err.message}</div>`;
+      });
+    }
+
+    function updateStatus(id, status) {
+      if (!window.dbEnabled) {
+        alert("Firebase not configured. Cannot update status.");
+        return;
+      }
+      window.db.collection("orders").doc(id).update({ status }).then(() => {
+        console.log("Status updated to:", status);
+      }).catch(err => {
+        console.error("Update failed:", err);
+        alert("Failed to update status. Check console.");
+      });
+    }
+
+    // Show auth on load
+    document.addEventListener('DOMContentLoaded', () => {
+      // If user is already authenticated in session, could auto-unlock, but for security we ask each time
+    });
+  </script>
+</body>
+</html>

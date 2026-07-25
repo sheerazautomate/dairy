@@ -6,14 +6,35 @@
   <title>Al Ihsan Dairies | Pure Desi Ghee — خالص دیسی گھی</title>
   <meta name="description" content="Buy pure Al Ihsan Dairies Desi Ghee in Pakistan. Hand-churned from free-grazing cow milk. 3500 PKR per KG. Cash on Delivery, JazzCash, EasyPaisa, Raast ID. Order via WhatsApp.">
   <meta name="keywords" content="desi ghee, al ihsan dairies, pure ghee pakistan, organic ghee, desi ghee karachi, desi ghee lahore, ghee price per kg, jazzcash easy paisa">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Al Ihsan Dairies | Pure Desi Ghee">
+  <meta property="og:description" content="Hand-churned pure desi ghee from free-grazing cow milk. 3500 PKR/KG. Order via WhatsApp.">
+  <meta property="og:image" content="assets/ghee-hero.jpg">
+  <meta property="og:locale" content="en_PK">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="robots" content="index, follow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="image" href="assets/ghee-hero.jpg">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Noto+Nastaliq+Urdu:wght@300;500;700&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Al Ihsan Dairies Pure Desi Ghee",
+    "image": "assets/ghee-hero.jpg",
+    "description": "Hand-churned pure desi ghee from free-grazing cow milk.",
+    "brand": {"@type": "Brand", "name": "Al Ihsan Dairies"},
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "PKR",
+      "price": "3500",
+      "availability": "https://schema.org/InStock"
+    }
+  }
+  </script>
 
   <style>
     :root{--teal-deep:#06453d;--teal:#0a6b5e;--teal-light:#148f7c;--gold:#cfa33a;--gold-soft:#e8c776;--gold-deep:#9a7528;--cream:#fdf8ef;--parchment:#f6f0e6;--ink:#1a1a1a;--ink-soft:#3a3a3a;}
@@ -125,6 +146,7 @@
     <ul>
       <li><a href="#product">Product</a></li>
       <li><a href="#checkout">Order</a></li>
+      <li><a href="order-status.html">Track Order</a></li>
       <li><a href="admin.html" target="_blank">Admin</a></li>
       <li><a href="#" onclick="openCart();return false;" aria-label="Open cart"><i class="fa-solid fa-cart-shopping"></i> <span id="nav-cart-count">0</span></a></li>
     </ul>
@@ -165,8 +187,9 @@
           <li><i class="fa-solid fa-star"></i> 100% Organic</li><li><i class="fa-solid fa-star"></i> Rich Aroma</li><li><i class="fa-solid fa-star"></i> 3500 PKR / KG</li>
         </ul>
         <div class="price-card" aria-label="Product price">
-          <div class="price-row"><span class="label">Price per KG</span><span class="price">3500 <span class="unit">PKR</span></span></div>
+          <div class="price-row"><span class="label">Price per KG</span><span class="price" id="product-price">3500 <span class="unit">PKR</span></span></div>
           <p class="note">Sold in kilograms. Fresh batches delivered weekly.</p>
+          <p class="note" id="stock-note" style="margin-top:0.4rem;">Checking availability…</p>
         </div>
         <div class="cart-row">
           <div class="qty-control" aria-label="Quantity selector">
@@ -174,7 +197,7 @@
             <span id="qty-display">1</span>
             <button onclick="updateQty(1)" aria-label="Increase quantity">+</button>
           </div>
-          <button class="btn btn-filled" onclick="addToCart()" aria-label="Add to cart"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+          <button class="btn btn-filled" id="add-to-cart-btn" onclick="addToCart()" aria-label="Add to cart"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
           <a href="#checkout" class="btn btn-outline" onclick="openCheckout();return true;" aria-label="Buy now">Buy Now</a>
         </div>
       </div>
@@ -237,9 +260,10 @@
           </p>
         </div>
 
-        <button type="submit" class="btn btn-gold" style="margin-top:1.5rem;width:100%;justify-content:center;font-size:1.05rem;padding:1rem;" aria-label="Place order via WhatsApp">
+        <button type="submit" class="btn btn-gold" id="submit-order-btn" style="margin-top:1.5rem;width:100%;justify-content:center;font-size:1.05rem;padding:1rem;" aria-label="Place order via WhatsApp">
           <i class="fa-brands fa-whatsapp"></i> Place Order via WhatsApp
         </button>
+        <p id="order-feedback" style="margin-top:0.8rem;font-size:0.85rem;color:var(--teal-deep);text-align:center;"></p>
       </form>
     </div>
   </section>
@@ -252,7 +276,7 @@
       <span>JazzCash / EasyPaisa: 03487463424</span>
       <span>Raast ID: 03347667999</span>
     </div>
-    <p style="margin-top:2rem;opacity:0.4;font-size:0.75rem;">© 2026 Al Ihsan Dairies. Real-time Firebase Database. Handcrafted with tradition.</p>
+    <p style="margin-top:2rem;opacity:0.4;font-size:0.75rem;">© 2026 Al Ihsan Dairies. Handcrafted with tradition.</p>
   </footer>
 
   <div id="cart-overlay" onclick="closeCart()" style="position:fixed;inset:0;background:rgba(6,69,61,0.25);z-index:190;display:none;backdrop-filter:blur(3px);"></div>
@@ -265,15 +289,34 @@
   </aside>
 
   <script>
-    // ======================= THREE.JS =======================
-    (function initThree(){
+    // ======================= SUPABASE =======================
+    // Safe to expose: the anon key only ever acts through Row Level
+    // Security policies and the two RPCs defined in supabase/schema.sql.
+    const SUPABASE_URL = "https://nyossueqmcbseiditlzk.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55b3NzdWVxbWNic2VpZGl0bHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTEzMzksImV4cCI6MjEwMDU2NzMzOX0.F8GpwiHZVpx1RwBxGlwOmsq7r2NI88Bh4BLOqOtSK1A";
+    const PRODUCT_SLUG = "pure-desi-ghee";
+    let sb=null;
+    function getClient(){
+      if(!sb && window.supabase){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+      return sb;
+    }
+
+    // ======================= THREE.JS (desktop only, lazy) =======================
+    // Skipped on small screens and reduced-motion to keep mobile fast.
+    function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s);});}
+    async function initThreeIfDesktop(){
       const canvas=document.getElementById('hero-canvas'); if(!canvas) return;
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(window.innerWidth < 768 || prefersReducedMotion){ canvas.style.display='none'; return; }
+      try{
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
+      }catch(e){ console.warn('Three.js failed to load, skipping hero animation.'); return; }
       const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
       renderer.setSize(window.innerWidth,window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
       const scene=new THREE.Scene();
       const ambient=new THREE.AmbientLight(0xffffff,0.45); scene.add(ambient);
       const dir=new THREE.DirectionalLight(0xffffff,0.7); dir.position.set(5,5,10); scene.add(dir);
-      const orbCount=18; const orbs=[]; const colors=[0xcfa33a,0x9a7528,0xe8c776,0x0a6b5e,0x148f7c];
+      const orbCount=12; const orbs=[]; const colors=[0xcfa33a,0x9a7528,0xe8c776,0x0a6b5e,0x148f7c];
       for(let i=0;i<orbCount;i++){
         const geo=new THREE.SphereGeometry(Math.random()*0.35+0.15,16,16);
         const mat=new THREE.MeshStandardMaterial({color:colors[Math.floor(Math.random()*colors.length)],roughness:0.25,metalness:0.35,emissive:colors[0],emissiveIntensity:0.15,transparent:true,opacity:0.7});
@@ -292,26 +335,31 @@
         ring.rotation.z+=0.003; renderer.render(scene,camera);}
       animate();
       window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight);});
-    })();
+    }
+    // Defer the 3D hero until after first paint so it never blocks load.
+    window.addEventListener('load', ()=> requestIdleCallback ? requestIdleCallback(initThreeIfDesktop) : setTimeout(initThreeIfDesktop, 300));
 
-    // ======================= FIREBASE =======================
-    const firebaseConfig={
-      apiKey:"YOUR_API_KEY", authDomain:"YOUR_PROJECT_ID.firebaseapp.com", projectId:"YOUR_PROJECT_ID",
-      storageBucket:"YOUR_PROJECT_ID.appspot.com", messagingSenderId:"YOUR_SENDER_ID", appId:"YOUR_APP_ID"
-    };
-    try{
-      if(firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY"){
-        firebase.initializeApp(firebaseConfig);
-        window.db=firebase.firestore(); window.fbReady=true;
-      } else {
-        console.warn("Firebase config not set. Running in demo mode without database save.");
-        window.fbReady=false;
-      }
-    } catch(e){console.error("Firebase init error:",e); window.fbReady=false;}
-
-    const PRICE_PER_KG=3500;
+    let PRICE_PER_KG=3500; let AVAILABLE_STOCK=null;
     let qty=1; let cart=JSON.parse(localStorage.getItem('aih_cart')||'[]'); let selectedPay='Cash on Delivery';
     let geoData={lat:null,lng:null,address:'',captured:false};
+
+    async function loadProduct(){
+      const client=getClient(); if(!client) return;
+      const {data,error} = await client.from('products').select('price,stock,unit').eq('slug',PRODUCT_SLUG).eq('active',true).single();
+      const stockNote=document.getElementById('stock-note'); const addBtn=document.getElementById('add-to-cart-btn');
+      if(error || !data){ stockNote.textContent='Availability unknown — you can still place your order.'; return; }
+      PRICE_PER_KG=Number(data.price); AVAILABLE_STOCK=Number(data.stock);
+      document.getElementById('product-price').innerHTML=`${PRICE_PER_KG.toLocaleString()} <span class="unit">PKR</span>`;
+      document.getElementById('checkout-total').textContent=(qty*PRICE_PER_KG)+' PKR';
+      if(AVAILABLE_STOCK<=0){
+        stockNote.innerHTML='<i class="fa-solid fa-circle-exclamation" style="color:#b23b3b;"></i> Out of stock — check back soon';
+        addBtn.disabled=true; addBtn.style.opacity='0.5'; addBtn.style.cursor='not-allowed';
+      } else if(AVAILABLE_STOCK<=10){
+        stockNote.innerHTML=`<i class="fa-solid fa-triangle-exclamation" style="color:var(--gold-deep);"></i> Only ${AVAILABLE_STOCK} KG left`;
+      } else {
+        stockNote.innerHTML='<i class="fa-solid fa-circle-check" style="color:var(--teal-deep);"></i> In stock';
+      }
+    }
 
     function updateQty(delta){qty=Math.max(1,qty+delta); document.getElementById('qty-display').textContent=qty;}
     function updateCheckoutQty(delta){qty=Math.max(1,qty+delta); document.getElementById('qty-display').textContent=qty; document.getElementById('checkout-qty').textContent=qty; document.getElementById('checkout-total').textContent=(qty*PRICE_PER_KG)+' PKR';}
@@ -323,7 +371,7 @@
       let html=''; let grand=0;
       cart.forEach((item,idx)=>{grand+=item.qty*item.price; html+=`
         <div class="cart-item">
-          <img src="assets/ghee-hero.jpg" alt="${item.name}" style="object-fit:cover;">
+          <img src="assets/ghee-hero.jpg" alt="${item.name}" loading="lazy" style="object-fit:cover;">
           <div class="cart-item-details" style="flex:1;">
             <h4>${item.name}</h4>
             <div class="qty-row"><button onclick="changeCartQty(${idx},-1)" aria-label="Decrease">−</button><span class="qty-num">${item.qty}</span><button onclick="changeCartQty(${idx},1)" aria-label="Increase">+</button></div>
@@ -363,49 +411,57 @@
     }
 
     // ======================= CHECKOUT =======================
-    function openCheckout(){qty=cart.reduce((s,i)=>s+i.qty,0); document.getElementById('checkout-qty').textContent=qty||1; document.getElementById('checkout-total').textContent=((qty||1)*PRICE_PER_KG)+' PKR';}
+    function openCheckout(){qty=cart.reduce((s,i)=>s+i.qty,0)||1; document.getElementById('qty-display').textContent=qty; document.getElementById('checkout-qty').textContent=qty; document.getElementById('checkout-total').textContent=(qty*PRICE_PER_KG)+' PKR';}
     function selectPay(btn,val){selectedPay=val; document.getElementById('selectedPay').value=val; document.querySelectorAll('.pay-option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected');}
 
-    function submitOrder(e){
+    async function submitOrder(e){
       e.preventDefault();
-      if(!cart.length){alert('Cart is empty. Add product first.'); return;}
+      const totalQty=qty||1;
       const form=document.getElementById('checkoutForm');
       const name=form.fullName.value.trim(); const contact=form.contact.value.trim(); const address=form.address.value.trim();
       const location=form.locationField.value.trim(); const payment=document.getElementById('selectedPay').value;
-      const totalQty=qty||1; const total=totalQty*PRICE_PER_KG;
+      const feedback=document.getElementById('order-feedback'); const submitBtn=document.getElementById('submit-order-btn');
 
-      const orderData={
-        id:'ORD-'+String(Date.now()).slice(-6), name, contact, address,
-        location: location || geoData.address,
-        geo:{lat: geoData.lat, lng: geoData.lng},
-        qty: totalQty, total, payment, status:'packing',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        time: new Date().toLocaleString('en-GB',{timeZone:'Asia/Karachi'})
-      };
+      const client=getClient();
+      if(!client){ feedback.textContent='Could not connect to the order system. Please try again.'; feedback.style.color='#b23b3b'; return; }
 
-      // If Firebase configured, save to Firestore; else show alert
-      if(window.fbReady && window.db){
-        window.db.collection("orders").add(orderData).then((docRef)=>{
-          console.log("Order saved with ID:", docRef.id);
-        }).catch((err)=>{
-          console.error("Firestore save failed:", err);
-        });
-      } else {
-        console.warn("Firebase not configured. Order not saved to database, but WhatsApp message will still be sent.");
+      submitBtn.disabled=true; submitBtn.style.opacity='0.6'; feedback.style.color='var(--teal-deep)'; feedback.textContent='Placing your order…';
+
+      const {data,error} = await client.rpc('place_order', {
+        p_customer_name: name, p_contact: contact, p_address: address,
+        p_location_text: location || geoData.address || null,
+        p_lat: geoData.lat, p_lng: geoData.lng,
+        p_product_slug: PRODUCT_SLUG, p_qty: totalQty, p_payment_method: payment
+      });
+
+      submitBtn.disabled=false; submitBtn.style.opacity='1';
+
+      if(error){
+        console.error('place_order failed:', error);
+        feedback.style.color='#b23b3b';
+        feedback.textContent = error.message.includes('stock') ? error.message : 'Could not place order — please try again or message us on WhatsApp directly.';
+        return;
       }
+
+      const orderNumber = Array.isArray(data) ? data[0]?.order_number : data?.order_number;
+      const total = totalQty*PRICE_PER_KG;
 
       // WhatsApp message with real-time location
       const geoStr = geoData.lat ? `\nLive GPS: https://www.google.com/maps?q=${geoData.lat},${geoData.lng}` : '';
-      const summary=`*Al Ihsan Dairies Order*\nName: ${name}\nContact: ${contact}\nAddress: ${address}\nLocation: ${location || geoData.address || 'Not provided'}${geoStr}\nQuantity: ${totalQty} KG\nTotal: ${total} PKR\nPayment: ${payment}`;
+      const summary=`*Al Ihsan Dairies Order*\nOrder #: ${orderNumber || 'N/A'}\nName: ${name}\nContact: ${contact}\nAddress: ${address}\nLocation: ${location || geoData.address || 'Not provided'}${geoStr}\nQuantity: ${totalQty} KG\nTotal: ${total} PKR\nPayment: ${payment}`;
       const waUrl=`https://wa.me/923347667999?text=${encodeURIComponent(summary)}`;
       window.open(waUrl,'_blank');
       cart=[]; localStorage.setItem('aih_cart',JSON.stringify(cart)); renderCart();
-      alert('Order submitted! WhatsApp will open with your summary and real-time location.');
+      feedback.style.color='var(--teal-deep)';
+      feedback.innerHTML = orderNumber ? `Order placed! Your order number is <strong>${orderNumber}</strong> — save it to track your order. WhatsApp will open with your summary.` : 'Order submitted! WhatsApp will open with your summary.';
+      loadProduct();
     }
 
     document.addEventListener('DOMContentLoaded',()=>{
       renderCart();
       document.querySelector('.pay-option').click();
+      // supabase-js loads with `defer`, so give it a tick before first use
+      setTimeout(loadProduct, 50);
     });
   </script>
 </body>

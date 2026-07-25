@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Al Ihsan Dairies — Admin</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Noto+Nastaliq+Urdu:wght@300;500;700&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
   <style>
     :root{--teal-deep:#06453d;--teal:#0a6b5e;--gold:#cfa33a;--gold-soft:#e8c776;--gold-deep:#9a7528;--cream:#fdf8ef;--ink:#1a1a1a;}
     *{margin:0;padding:0;box-sizing:border-box;}
@@ -21,7 +21,22 @@
     .auth-box input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(207,163,58,0.15);}
     .auth-box button{margin-top:1.5rem;width:100%;padding:1rem;background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#fff;border:none;border-radius:100px;font-weight:600;cursor:pointer;font-size:1rem;letter-spacing:0.04em;transition:transform 0.2s,box-shadow 0.2s;}
     .auth-box button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(207,163,58,0.35);}
+    .auth-box .err{color:#e08a8a;font-size:0.82rem;margin-top:0.8rem;min-height:1.2em;}
     .hidden{display:none;}
+    .toolbar{max-width:1100px;width:100%;display:flex;flex-wrap:wrap;gap:0.8rem;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+    .toolbar-left{display:flex;gap:0.7rem;flex-wrap:wrap;align-items:center;}
+    .toolbar input[type=text]{padding:0.6rem 1rem;border-radius:100px;border:1px solid rgba(207,163,58,0.3);background:rgba(255,255,255,0.06);color:#fff;font-family:inherit;font-size:0.85rem;min-width:220px;}
+    .toolbar select{padding:0.6rem 1rem;border-radius:100px;border:1px solid rgba(207,163,58,0.3);background:rgba(255,255,255,0.06);color:#fff;font-family:inherit;font-size:0.85rem;}
+    .toolbar option{background:var(--ink);}
+    .pill-btn{background:none;border:1px solid rgba(207,163,58,0.3);color:var(--gold-soft);padding:0.5rem 1.1rem;border-radius:100px;cursor:pointer;font-size:0.85rem;font-family:inherit;transition:all 0.2s;}
+    .pill-btn:hover{background:rgba(207,163,58,0.15);}
+    .stat-row{max-width:1100px;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;}
+    .stat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(207,163,58,0.15);border-radius:0.9rem;padding:1rem 1.2rem;}
+    .stat-card .num{font-family:'Cormorant Garamond',serif;font-size:1.9rem;color:var(--gold-soft);}
+    .stat-card .lbl{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.5);}
+    .stock-box{max-width:1100px;width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(207,163,58,0.15);border-radius:1rem;padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;}
+    .stock-box .row{display:flex;gap:0.7rem;align-items:center;flex-wrap:wrap;}
+    .stock-box input{width:110px;padding:0.55rem 0.8rem;border-radius:8px;border:1px solid rgba(207,163,58,0.3);background:rgba(255,255,255,0.06);color:#fff;font-family:inherit;}
     .admin-grid{max-width:1100px;width:100%;display:grid;gap:1.2rem;}
     .order-card{background:rgba(255,255,255,0.04);border:1px solid rgba(207,163,58,0.15);border-radius:1rem;padding:1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;transition:border-color 0.2s;backdrop-filter:blur(6px);}
     .order-card:hover{border-color:rgba(207,163,58,0.4);}
@@ -41,138 +56,205 @@
   <p class="sub-head">Admin Panel — صرف فعال آرڈرز دیکھیں</p>
 
   <div id="auth-box" class="auth-box">
-    <h2>Administrator Access</h2>
-    <form onsubmit="authenticate(event)">
-      <label for="adminPass">Access Key</label>
-      <input type="password" id="adminPass" placeholder="Enter admin access key" required>
-      <button type="submit"><i class="fa-solid fa-lock-open"></i> Unlock Panel</button>
+    <h2>Administrator Login</h2>
+    <form id="loginForm">
+      <label for="adminEmail">Email</label>
+      <input type="email" id="adminEmail" placeholder="you@alihsandairies.com" required autocomplete="username">
+      <label for="adminPass">Password</label>
+      <input type="password" id="adminPass" placeholder="Password" required autocomplete="current-password">
+      <button type="submit"><i class="fa-solid fa-lock-open"></i> Log In</button>
+      <p class="err" id="auth-err"></p>
     </form>
-    <p style="margin-top:1rem;font-size:0.78rem;color:rgba(255,255,255,0.35);">Default key: <strong>alihsan2026</strong> (change in code for production)</p>
   </div>
 
   <div id="admin-panel" class="hidden">
     <div style="text-align:center;margin-bottom:1.5rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;align-items:center;">
-      <span class="badge">Live Firebase Data</span>
-      <button onclick="logout()" style="background:none;border:1px solid rgba(207,163,58,0.3);color:var(--gold-soft);padding:0.4rem 1rem;border-radius:100px;cursor:pointer;font-size:0.85rem;font-family:inherit;">Log Out</button>
+      <span class="badge"><i class="fa-solid fa-bolt"></i> Live Supabase Data</span>
+      <span id="who" style="font-size:0.82rem;color:rgba(255,255,255,0.55);"></span>
+      <button onclick="logout()" class="pill-btn">Log Out</button>
     </div>
+
+    <div class="stat-row" id="stat-row"></div>
+
+    <div class="stock-box" id="stock-box">
+      <div class="row">
+        <strong style="color:var(--gold-soft);font-family:'Cormorant Garamond',serif;font-size:1.2rem;">Pure Desi Ghee</strong>
+        <span style="font-size:0.85rem;color:rgba(255,255,255,0.6);">Price (PKR/KG)</span>
+        <input type="number" id="priceInput" min="0" step="1">
+        <span style="font-size:0.85rem;color:rgba(255,255,255,0.6);">Stock (KG)</span>
+        <input type="number" id="stockInput" min="0" step="1">
+      </div>
+      <button class="pill-btn" onclick="saveProduct()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" id="searchBox" placeholder="Search name, contact, order #…" oninput="renderOrders()">
+        <select id="statusFilter" onchange="renderOrders()">
+          <option value="">All statuses</option>
+          <option value="packing">Packing</option>
+          <option value="handed over to delivery service">Handed over to delivery service</option>
+          <option value="out for delivery">Out for delivery</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <button class="pill-btn" onclick="loadOrders()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+
     <div class="admin-grid" id="admin-grid" aria-label="Orders list"></div>
   </div>
 
   <script>
-    // ===== FIREBASE CONFIG — REPLACE WITH YOUR PROJECT =====
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-    // Initialize if config looks real; otherwise show alert
-    try {
-      if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-        console.warn("Firebase config not set. Using demo mode with local fallback.");
-      }
-      firebase.initializeApp(firebaseConfig);
-      window.db = firebase.firestore();
-      window.dbEnabled = true;
-    } catch(e) {
-      console.error("Firebase init failed:", e);
-      window.dbEnabled = false;
-    }
+    // ===== SUPABASE CONFIG =====
+    // Only the anon key goes here. It can never read/write orders or
+    // products directly — every action requires an authenticated admin
+    // session (see supabase/schema.sql policies), so this is safe to
+    // expose in client code.
+    const SUPABASE_URL = "https://nyossueqmcbseiditlzk.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55b3NzdWVxbWNic2VpZGl0bHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTEzMzksImV4cCI6MjEwMDU2NzMzOX0.F8GpwiHZVpx1RwBxGlwOmsq7r2NI88Bh4BLOqOtSK1A";
+    const PRODUCT_SLUG = "pure-desi-ghee";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const ADMIN_KEY = "alihsan2026";
-    const statusOptions = ["packing","handed over to delivery service","out for delivery","cancelled","delivered"];
+    const statusOptions = ["packing","handed over to delivery service","out for delivery","delivered","cancelled"];
+    let allOrders = [];
+    let productId = null;
+    let realtimeChannel = null;
 
-    function authenticate(e) {
+    // ===== AUTH =====
+    document.getElementById('loginForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const val = document.getElementById('adminPass').value.trim();
-      if (val === ADMIN_KEY) {
-        document.getElementById('auth-box').classList.add('hidden');
-        document.getElementById('admin-panel').classList.remove('hidden');
-        loadOrders();
-      } else {
-        alert("Invalid access key. Default is alihsan2026 for demo.");
-      }
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPass').value;
+      const errEl = document.getElementById('auth-err');
+      errEl.textContent = '';
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) { errEl.textContent = error.message; return; }
+      enterPanel();
+    });
+
+    async function enterPanel(){
+      const { data: { user } } = await sb.auth.getUser();
+      document.getElementById('auth-box').classList.add('hidden');
+      document.getElementById('admin-panel').classList.remove('hidden');
+      document.getElementById('who').textContent = user ? `Signed in as ${user.email}` : '';
+      await loadProduct();
+      await loadOrders();
+      subscribeRealtime();
     }
 
-    function logout() {
+    async function logout(){
+      if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+      await sb.auth.signOut();
       document.getElementById('admin-panel').classList.add('hidden');
       document.getElementById('auth-box').classList.remove('hidden');
       document.getElementById('adminPass').value = '';
     }
 
-    function loadOrders() {
-      if (!window.dbEnabled) {
-        document.getElementById('admin-grid').innerHTML = `<div class="empty-state">Firebase not configured. Please set your Firebase project config in the HTML file.</div>`;
-        return;
-      }
-      // Real-time listener
-      window.db.collection("orders").orderBy("createdAt","desc").onSnapshot(snapshot => {
-        const grid = document.getElementById('admin-grid');
-        if (snapshot.empty) {
-          grid.innerHTML = `<div class="empty-state">No orders found. Orders will appear here automatically when customers submit.</div>`;
-          return;
-        }
-        let html = '';
-        snapshot.forEach(doc => {
-          const o = doc.data();
-          html += `
-          <div class="order-card" aria-label="Order ${o.id || doc.id}">
-            <div>
-              <h4>${o.id || doc.id}</h4>
-              <p style="font-size:0.9rem;color:rgba(255,255,255,0.85);">${o.name || 'N/A'}</p>
-              <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);">${o.contact || 'N/A'}</p>
-              <p class="label">Time / وقت</p>
-              <p style="font-size:0.82rem;color:rgba(255,255,255,0.7);">${o.time || new Date(o.createdAt?.toDate?.() || Date.now()).toLocaleString('en-GB',{timeZone:'Asia/Karachi'})}</p>
-            </div>
-            <div>
-              <p class="label">Address / پتہ</p>
-              <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${o.address || 'N/A'}</p>
-              <p class="label">Location / مقام</p>
-              <p style="font-size:0.82rem;color:rgba(255,255,255,0.7);">${o.location || 'Not provided'}</p>
-              ${o.location ? `<a class="location-link" href="${o.location.startsWith('http') ? o.location : 'https://maps.google.com/?q=' + encodeURIComponent(o.location)}" target="_blank"><i class="fa-solid fa-location-dot"></i> Open Map</a>` : ''}
-            </div>
-            <div>
-              <p class="label">Order Summary</p>
-              <p style="font-size:0.9rem;color:rgba(255,255,255,0.9);">${o.qty || 0} KG × 3500 PKR</p>
-              <p style="font-size:1.1rem;color:var(--gold-soft);font-weight:600;">${(o.qty || 0) * 3500} PKR</p>
-              <p class="label">Payment</p>
-              <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${o.payment || 'N/A'}</p>
-            </div>
-            <div>
-              <p class="label">Status / حالت</p>
-              <select class="status-select" onchange="updateStatus('${doc.id}', this.value)">
-                ${statusOptions.map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
-              </select>
-              <p style="margin-top:0.6rem;font-size:0.78rem;color:rgba(255,255,255,0.35);">Firebase sync active</p>
-            </div>
-          </div>`;
-        });
-        grid.innerHTML = html;
-      }, err => {
-        console.error(err);
-        grid.innerHTML = `<div class="empty-state">Error loading orders: ${err.message}</div>`;
-      });
+    // Restore session on reload
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) enterPanel();
+    })();
+
+    // ===== PRODUCT / STOCK =====
+    async function loadProduct(){
+      const { data, error } = await sb.from('products').select('id,price,stock').eq('slug', PRODUCT_SLUG).single();
+      if (error || !data) return;
+      productId = data.id;
+      document.getElementById('priceInput').value = data.price;
+      document.getElementById('stockInput').value = data.stock;
     }
 
-    function updateStatus(id, status) {
-      if (!window.dbEnabled) {
-        alert("Firebase not configured. Cannot update status.");
-        return;
-      }
-      window.db.collection("orders").doc(id).update({ status }).then(() => {
-        console.log("Status updated to:", status);
-      }).catch(err => {
-        console.error("Update failed:", err);
-        alert("Failed to update status. Check console.");
-      });
+    async function saveProduct(){
+      if (!productId) return;
+      const price = Number(document.getElementById('priceInput').value);
+      const stock = Number(document.getElementById('stockInput').value);
+      const { error } = await sb.from('products').update({ price, stock }).eq('id', productId);
+      if (error) { alert('Failed to save: ' + error.message); return; }
+      alert('Saved.');
     }
 
-    // Show auth on load
-    document.addEventListener('DOMContentLoaded', () => {
-      // If user is already authenticated in session, could auto-unlock, but for security we ask each time
-    });
+    // ===== ORDERS =====
+    async function loadOrders(){
+      const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+      const grid = document.getElementById('admin-grid');
+      if (error) { grid.innerHTML = `<div class="empty-state">Error loading orders: ${error.message}</div>`; return; }
+      allOrders = data || [];
+      renderStats();
+      renderOrders();
+    }
+
+    function subscribeRealtime(){
+      realtimeChannel = sb.channel('orders-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => loadOrders())
+        .subscribe();
+    }
+
+    function renderStats(){
+      const total = allOrders.length;
+      const active = allOrders.filter(o => !['delivered','cancelled'].includes(o.status)).length;
+      const revenue = allOrders.filter(o => o.status !== 'cancelled').reduce((s,o)=>s+Number(o.total),0);
+      const today = new Date().toISOString().slice(0,10);
+      const todayCount = allOrders.filter(o => (o.created_at||'').slice(0,10) === today).length;
+      document.getElementById('stat-row').innerHTML = `
+        <div class="stat-card"><div class="num">${total}</div><div class="lbl">Total Orders</div></div>
+        <div class="stat-card"><div class="num">${active}</div><div class="lbl">Active</div></div>
+        <div class="stat-card"><div class="num">${todayCount}</div><div class="lbl">Today</div></div>
+        <div class="stat-card"><div class="num">${revenue.toLocaleString()}</div><div class="lbl">Revenue (PKR)</div></div>
+      `;
+    }
+
+    function renderOrders(){
+      const grid = document.getElementById('admin-grid');
+      const q = document.getElementById('searchBox').value.trim().toLowerCase();
+      const statusF = document.getElementById('statusFilter').value;
+      let list = allOrders;
+      if (statusF) list = list.filter(o => o.status === statusF);
+      if (q) list = list.filter(o =>
+        (o.customer_name||'').toLowerCase().includes(q) ||
+        (o.contact||'').toLowerCase().includes(q) ||
+        (o.order_number||'').toLowerCase().includes(q)
+      );
+      if (!list.length){ grid.innerHTML = `<div class="empty-state">No orders match.</div>`; return; }
+
+      grid.innerHTML = list.map(o => `
+        <div class="order-card" aria-label="Order ${o.order_number}">
+          <div>
+            <h4>${o.order_number}</h4>
+            <p style="font-size:0.9rem;color:rgba(255,255,255,0.85);">${o.customer_name || 'N/A'}</p>
+            <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);">${o.contact || 'N/A'}</p>
+            <p class="label">Time / وقت</p>
+            <p style="font-size:0.82rem;color:rgba(255,255,255,0.7);">${new Date(o.created_at).toLocaleString('en-GB',{timeZone:'Asia/Karachi'})}</p>
+          </div>
+          <div>
+            <p class="label">Address / پتہ</p>
+            <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${o.address || 'N/A'}</p>
+            <p class="label">Location / مقام</p>
+            <p style="font-size:0.82rem;color:rgba(255,255,255,0.7);">${o.location_text || 'Not provided'}</p>
+            ${o.lat && o.lng ? `<a class="location-link" href="https://www.google.com/maps?q=${o.lat},${o.lng}" target="_blank"><i class="fa-solid fa-location-dot"></i> Open Map</a>` : ''}
+          </div>
+          <div>
+            <p class="label">Order Summary</p>
+            <p style="font-size:0.9rem;color:rgba(255,255,255,0.9);">${o.qty || 0} KG × ${Number(o.unit_price).toLocaleString()} PKR</p>
+            <p style="font-size:1.1rem;color:var(--gold-soft);font-weight:600;">${Number(o.total).toLocaleString()} PKR</p>
+            <p class="label">Payment</p>
+            <p style="font-size:0.85rem;color:rgba(255,255,255,0.85);">${o.payment_method || 'N/A'}</p>
+          </div>
+          <div>
+            <p class="label">Status / حالت</p>
+            <select class="status-select" onchange="updateStatus('${o.id}', this.value)">
+              ${statusOptions.map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+            </select>
+            <p style="margin-top:0.6rem;font-size:0.78rem;color:rgba(255,255,255,0.35);">Live sync active</p>
+          </div>
+        </div>`).join('');
+    }
+
+    async function updateStatus(id, status){
+      const { error } = await sb.from('orders').update({ status }).eq('id', id);
+      if (error) { alert('Failed to update status: ' + error.message); console.error(error); }
+    }
   </script>
 </body>
 </html>

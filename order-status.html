@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Your Order | Al Ihsan Dairies</title>
+  <meta name="robots" content="noindex, follow">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Noto+Nastaliq+Urdu:wght@300;500;700&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root{--teal-deep:#06453d;--teal:#0a6b5e;--gold:#cfa33a;--gold-soft:#e8c776;--gold-deep:#9a7528;--cream:#fdf8ef;--parchment:#f6f0e6;--ink:#1a1a1a;--ink-soft:#3a3a3a;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Outfit',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:4rem 6vw;}
+    a.back{align-self:flex-start;color:var(--teal-deep);text-decoration:none;font-size:0.9rem;margin-bottom:2rem;}
+    a.back:hover{text-decoration:underline;}
+    h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,5vw,3rem);color:var(--teal-deep);text-align:center;}
+    h1 .gold{color:var(--gold-deep);font-weight:600;font-style:italic;}
+    .sub{color:var(--ink-soft);text-align:center;margin-top:0.5rem;margin-bottom:2.5rem;}
+    .lookup-box{background:linear-gradient(145deg,#fff 0%,var(--parchment) 100%);border:1px solid rgba(207,163,58,0.15);border-radius:1.5rem;padding:2.2rem;max-width:440px;width:100%;box-shadow:0 10px 40px rgba(10,107,94,0.06);}
+    .lookup-box label{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--teal-deep);font-weight:600;display:block;margin-top:1rem;}
+    .lookup-box input{width:100%;padding:0.85rem 1rem;border:1.5px solid rgba(10,107,94,0.1);border-radius:10px;font-family:inherit;font-size:0.92rem;background:#fff;color:var(--ink);margin-top:0.4rem;}
+    .lookup-box input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(207,163,58,0.1);}
+    .lookup-box button{margin-top:1.5rem;width:100%;padding:0.9rem;background:linear-gradient(135deg,var(--gold) 0%,var(--gold-deep) 100%);color:#fff;border:none;border-radius:100px;font-weight:600;cursor:pointer;font-size:0.95rem;letter-spacing:0.04em;}
+    .lookup-box button:hover{transform:translateY(-1px);}
+    .msg{margin-top:1rem;font-size:0.85rem;text-align:center;min-height:1.2em;}
+    .result-card{margin-top:2rem;background:#fff;border:1px solid rgba(207,163,58,0.2);border-radius:1.2rem;padding:1.8rem;width:100%;max-width:440px;box-shadow:0 10px 30px rgba(10,107,94,0.06);}
+    .result-card h3{font-family:'Cormorant Garamond',serif;color:var(--teal-deep);font-size:1.4rem;margin-bottom:0.8rem;}
+    .result-row{display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid rgba(10,107,94,0.06);font-size:0.9rem;}
+    .result-row .k{color:var(--ink-soft);}
+    .result-row .v{font-weight:600;color:var(--teal-deep);}
+    .status-pill{display:inline-block;padding:0.3rem 1rem;border-radius:100px;background:rgba(207,163,58,0.15);color:var(--gold-deep);font-weight:600;font-size:0.85rem;text-transform:capitalize;}
+    .hidden{display:none;}
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back"><i class="fa-solid fa-arrow-left"></i> Back to shop</a>
+  <h1>Track Your <span class="gold">Order</span></h1>
+  <p class="sub">اپنے آرڈر کی حالت چیک کریں — Enter your order number and phone number</p>
+
+  <div class="lookup-box">
+    <form id="lookupForm">
+      <label for="orderNumber">Order Number</label>
+      <input type="text" id="orderNumber" placeholder="ORD-1004" required>
+      <label for="contact">Phone Number Used at Checkout</label>
+      <input type="tel" id="contact" placeholder="0348 746 3424" required>
+      <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Track Order</button>
+      <p class="msg" id="msg"></p>
+    </form>
+  </div>
+
+  <div class="result-card hidden" id="result">
+    <h3 id="r-order-number"></h3>
+    <div style="text-align:center;margin-bottom:1rem;"><span class="status-pill" id="r-status"></span></div>
+    <div class="result-row"><span class="k">Product</span><span class="v" id="r-product"></span></div>
+    <div class="result-row"><span class="k">Quantity</span><span class="v" id="r-qty"></span></div>
+    <div class="result-row"><span class="k">Total</span><span class="v" id="r-total"></span></div>
+    <div class="result-row"><span class="k">Payment</span><span class="v" id="r-payment"></span></div>
+    <div class="result-row" style="border-bottom:none;"><span class="k">Placed</span><span class="v" id="r-time"></span></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://nyossueqmcbseiditlzk.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55b3NzdWVxbWNic2VpZGl0bHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTEzMzksImV4cCI6MjEwMDU2NzMzOX0.F8GpwiHZVpx1RwBxGlwOmsq7r2NI88Bh4BLOqOtSK1A";
+    let sb=null;
+    function getClient(){
+      if(!sb && window.supabase){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+      return sb;
+    }
+
+    document.getElementById('lookupForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const orderNumber = document.getElementById('orderNumber').value.trim().toUpperCase();
+      const contact = document.getElementById('contact').value.trim();
+      const msg = document.getElementById('msg');
+      const result = document.getElementById('result');
+      result.classList.add('hidden'); msg.style.color='var(--ink-soft)'; msg.textContent='Looking up your order…';
+
+      const client = getClient();
+      if(!client){ msg.style.color='#b23b3b'; msg.textContent='Could not connect. Please try again.'; return; }
+
+      const { data, error } = await client.rpc('get_order_status', { p_order_number: orderNumber, p_contact: contact });
+      if(error){ msg.style.color='#b23b3b'; msg.textContent='Something went wrong. Please try again.'; console.error(error); return; }
+      if(!data || !data.length){ msg.style.color='#b23b3b'; msg.textContent='No matching order found. Check your order number and phone number.'; return; }
+
+      const o = data[0];
+      msg.textContent='';
+      document.getElementById('r-order-number').textContent = o.order_number;
+      document.getElementById('r-status').textContent = o.status;
+      document.getElementById('r-product').textContent = o.product_name;
+      document.getElementById('r-qty').textContent = o.qty + ' KG';
+      document.getElementById('r-total').textContent = Number(o.total).toLocaleString() + ' PKR';
+      document.getElementById('r-payment').textContent = o.payment_method;
+      document.getElementById('r-time').textContent = new Date(o.created_at).toLocaleString('en-GB',{timeZone:'Asia/Karachi'});
+      result.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

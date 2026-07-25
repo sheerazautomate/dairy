@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Al Ihsan Dairies | Pure Desi Ghee — خالص دیسی گھی</title>
+  <meta name="description" content="Buy pure Al Ihsan Dairies Desi Ghee in Pakistan. Hand-churned from free-grazing cow milk. 3500 PKR per KG. Cash on Delivery, JazzCash, EasyPaisa, Raast ID. Order via WhatsApp.">
+  <meta name="keywords" content="desi ghee, al ihsan dairies, pure ghee pakistan, organic ghee, desi ghee karachi, desi ghee lahore, ghee price per kg, jazzcash easy paisa">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Noto+Nastaliq+Urdu:wght@300;500;700&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --teal-deep: #06453d;
+      --teal: #0a6b5e;
+      --teal-light: #148f7c;
+      --gold: #cfa33a;
+      --gold-soft: #e8c776;
+      --gold-deep: #9a7528;
+      --cream: #fdf8ef;
+      --parchment: #f6f0e6;
+      --ink: #1a1a1a;
+      --ink-soft: #3a3a3a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ===== THREE.JS CANVAS ===== */
+    #hero-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.18;
+    }
+
+    /* ===== NAVIGATION ===== */
+    nav {
+      position: fixed;
+      top: 0; left: 0; width: 100%;
+      z-index: 100;
+      padding: 1.1rem 3vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(253,248,239,0.92) 0%, rgba(253,248,239,0) 100%);
+      backdrop-filter: blur(6px);
+    }
+
+    .logo-mark {
+      display: flex; align-items: center; gap: 0.6rem;
+      text-decoration: none;
+    }
+
+    .logo-mark img {
+      height: 48px; width: auto;
+      border-radius: 50%;
+      box-shadow: 0 2px 12px rgba(10,107,94,0.18);
+      border: 2px solid var(--gold);
+    }
+
+    .logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 1.35rem;
+      color: var(--teal-deep);
+      line-height: 1.1;
+    }
+    .logo-text span { color: var(--gold-deep); font-style: italic; }
+
+    nav ul {
+      display: flex; gap: 2.2rem; list-style: none;
+    }
+    nav ul a {
+      text-decoration: none; color: var(--ink-soft);
+      font-weight: 400; font-size: 0.92rem; letter-spacing: 0.04em;
+      position: relative; transition: color 0.25s;
+    }
+    nav ul a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1.5px; background: var(--gold); transition: width 0.3s;
+    }
+    nav ul a:hover { color: var(--teal-deep); }
+    nav ul a:hover::after { width: 100%; }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative; z-index: 2;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 10vh 6vw 6vh; text-align: center;
+      overflow: hidden;
+    }
+
+    .hero-inner {
+      max-width: 960px; position: relative; z-index: 3;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.65rem;
+      background: rgba(253,248,239,0.75);
+      border: 1.5px solid rgba(207,163,58,0.25);
+      backdrop-filter: blur(8px);
+      padding: 0.55rem 1.4rem; border-radius: 100px;
+      font-size: 0.82rem; color: var(--teal-deep); letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 2rem;
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300; font-size: clamp(3.2rem, 7.5vw, 6.5rem);
+      color: var(--teal-deep); line-height: 0.92; letter-spacing: -0.03em;
+    }
+    .hero h1 .gold {
+      color: var(--gold-deep); font-weight: 600; font-style: italic;
+    }
+    .hero h1 .urdu-line {
+      font-family: 'Noto Nastaliq Urdu', 'Noto Nastaliq Urdu', serif;
+      font-weight: 400; font-size: 0.55em; letter-spacing: 0.02em;
+      color: var(--teal); display: block; margin-top: 0.3em;
+      direction: rtl;
+    }
+
+    .hero-sub {
+      font-family: 'Noto Nastaliq Urdu', serif;
+      font-size: 1.3rem; color: var(--teal-deep); opacity: 0.85; margin-top: 1.5rem;
+      direction: rtl;
+      line-height: 2;
+    }
+    .hero-sub-en {
+      font-family: 'Outfit', sans-serif; font-weight: 200; font-size: 1.15rem;
+      color: var(--ink-soft); margin-top: 0.8rem;
+      letter-spacing: 0.06em;
+    }
+
+    .cta-row {
+      margin-top: 2.8rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      padding: 0.85rem 2.2rem; border-radius: 100px; text-decoration: none;
+      font-weight: 600; font-size: 0.95rem; letter-spacing: 0.04em;
+      transition: all 0.3s ease; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(10,107,94,0.15);
+    }
+    .btn-filled { background: var(--teal-deep); color: #fff; }
+    .btn-filled:hover { background: var(--gold-deep); transform: translateY(-2px); }
+    .btn-outline { background: transparent; color: var(--teal-deep); border: 2px solid var(--teal-deep); }
+    .btn-outline:hover { background: var(--teal-deep); color: #fff; }
+    .btn-gold { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%); color: #fff; }
+    .btn-gold:hover { background: linear-gradient(135deg, var(--gold-deep) 0%, var(--gold) 100%); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(207,163,58,0.35); }
+
+    /* ===== SECTIONS ===== */
+    section { position: relative; z-index: 2; padding: 7rem 6vw; }
+
+    .section-header {
+      max-width: 720px; margin: 0 auto 4rem; text-align: center;
+    }
+    .section-header h2 {
+      font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(2rem, 4.5vw, 3.2rem);
+      color: var(--teal-deep); line-height: 1.1;
+    }
+    .section-header h2 .gold { color: var(--gold-deep); font-weight: 600; font-style: italic; }
+    .section-header .urdu-sub {
+      font-family: 'Noto Nastaliq Urdu', serif; font-size: 1.1rem; color: var(--teal); margin-top: 0.6rem; direction: rtl;
+    }
+    .divider-gold {
+      width: 60px; height: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-deep));
+      margin: 1.2rem auto; border-radius: 3px;
+    }
+
+    /* ===== ABOUT / PRODUCT ===== */
+    .product-showcase {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1200px; margin: 0 auto;
+    }
+    @media (max-width: 900px) { .product-showcase { grid-template-columns: 1fr; } }
+
+    .product-visual {
+      position: relative; border-radius: 2rem; overflow: hidden; box-shadow: 0 30px 60px rgba(10,107,94,0.12);
+    }
+    .product-visual img {
+      width: 100%; height: auto; display: block;
+      transition: transform 0.7s ease;
+    }
+    .product-visual:hover img { transform: scale(1.03); }
+    .visual-badge {
+      position: absolute; top: 1.2rem; right: 1.2rem;
+      background: rgba(253,248,239,0.9); backdrop-filter: blur(6px);
+      padding: 0.6rem 1.2rem; border-radius: 100px; border: 1px solid var(--gold-soft);
+      font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--teal-deep);
+      box-shadow: 0 4px 15px rgba(10,107,94,0.08);
+    }
+
+    .product-info h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--teal-deep); margin-bottom: 0.5rem; }
+    .product-info .urdu-desc {
+      font-family: 'Noto Nastaliq Urdu', serif; font-size: 1.05rem; color: var(--teal); direction: rtl; line-height: 2; margin: 1rem 0;
+    }
+    .product-info .en-desc { color: var(--ink-soft); line-height: 1.85; margin-bottom: 1.5rem; }
+    .features-list { list-style: none; display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 2rem; }
+    .features-list li {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: var(--parchment); padding: 0.35rem 0.9rem; border-radius: 100px;
+      font-size: 0.82rem; color: var(--teal-deep); border: 1px solid rgba(207,163,58,0.15);
+    }
+    .features-list i { color: var(--gold-deep); font-size: 0.75rem; }
+
+    /* ===== PRICE & CART ===== */
+    .price-card {
+      background: linear-gradient(145deg, #fff 0%, var(--parchment) 100%);
+      border: 1px solid rgba(207,163,58,0.15); border-radius: 1.5rem; padding: 2rem;
+      box-shadow: 0 10px 40px rgba(10,107,94,0.06);
+      max-width: 460px; margin-top: 1.5rem;
+    }
+    .price-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.3rem; }
+    .price-row .label { color: var(--ink-soft); font-size: 0.9rem; }
+    .price-row .price { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; color: var(--teal-deep); font-weight: 600; }
+    .price-row .unit { font-size: 0.85rem; color: var(--ink-soft); }
+    .price-card .note { font-size: 0.82rem; color: var(--ink-soft); opacity: 0.7; margin-top: 0.3rem; }
+
+    .cart-row { display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; }
+    .qty-control { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--cream); border: 1.5px solid rgba(10,107,94,0.1); border-radius: 12px; padding: 0.3rem; }
+    .qty-control button { width: 36px; height: 36px; border: none; background: var(--teal-deep); color: #fff; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .qty-control button:hover { background: var(--gold-deep); }
+    .qty-control span { min-width: 32px; text-align: center; font-weight: 600; color: var(--teal-deep); }
+
+    /* ===== CART DRAWER ===== */
+    .cart-drawer {
+      position: fixed; top: 0; right: 0; width: 420px; max-width: 100%; height: 100vh; z-index: 200;
+      background: linear-gradient(170deg, var(--cream) 0%, #fff 60%);
+      border-left: 1.5px solid rgba(207,163,58,0.2); box-shadow: -20px 0 50px rgba(10,107,94,0.1);
+      transform: translateX(105%); transition: transform 0.35s ease; padding: 2rem 1.8rem; overflow-y: auto;
+    }
+    .cart-drawer.open { transform: translateX(0); }
+
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .drawer-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--teal-deep); }
+    .drawer-header button { background: none; border: none; font-size: 1.3rem; color: var(--teal-deep); cursor: pointer; }
+
+    .cart-item { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid rgba(10,107,94,0.06); }
+    .cart-item img { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; border: 1.5px solid var(--gold-soft); flex-shrink: 0; }
+    .cart-item-details h4 { font-size: 0.95rem; color: var(--ink); }
+    .cart-item-details .qty-row { display: flex; align-items: center; gap: 0.7rem; margin-top: 0.4rem; font-size: 0.85rem; color: var(--ink-soft); }
+    .qty-row button { width: 26px; height: 26px; border-radius: 6px; border: none; background: var(--teal-deep); color: #fff; cursor: pointer; font-weight: 700; }
+    .qty-row button:hover { background: var(--gold-deep); }
+    .qty-row .qty-num { min-width: 22px; text-align: center; }
+
+    .cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.2rem; border-top: 2px solid rgba(207,163,58,0.2); }
+    .cart-total-row span { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--teal-deep); }
+
+    /* ===== CHECKOUT FORM ===== */
+    .checkout-form { display: grid; gap: 1rem; margin-top: 1.5rem; }
+    .checkout-form input, .checkout-form textarea, .checkout-form select {
+      width: 100%; padding: 0.85rem 1rem; border: 1.5px solid rgba(10,107,94,0.1); border-radius: 10px; font-family: inherit; font-size: 0.92rem; background: #fff; color: var(--ink);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .checkout-form input:focus, .checkout-form textarea:focus, .checkout-form select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(207,163,58,0.1); }
+    .checkout-form textarea { resize: vertical; min-height: 80px; }
+    .checkout-form label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--teal-deep); font-weight: 600; }
+
+    /* ===== PAYMENT OPTIONS ===== */
+    .pay-options { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
+    .pay-option { flex: 1 1 140px; padding: 0.8rem 0.6rem; border: 2px solid rgba(10,107,94,0.08); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fff; font-size: 0.85rem; color: var(--ink-soft); }
+    .pay-option.selected { border-color: var(--gold-deep); background: rgba(207,163,58,0.05); color: var(--teal-deep); font-weight: 600; }
+    .pay-option:hover { border-color: var(--gold); }
+
+    /* ===== ADMIN PANEL ===== */
+    #admin-panel {
+      background: linear-gradient(170deg, var(--ink) 0%, #1a2e2a 100%);
+      color: #fff; padding: 6rem 6vw;
+    }
+    #admin-panel h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; text-align: center; color: var(--gold-soft); }
+    .admin-grid { max-width: 1100px; margin: 2rem auto 0; display: grid; gap: 1.2rem; }
+    .order-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(207,163,58,0.15);
+      border-radius: 1rem; padding: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;
+      transition: border-color 0.2s; backdrop-filter: blur(6px);
+    }
+    .order-card:hover { border-color: rgba(207,163,58,0.4); }
+    .order-card h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--gold-soft); margin-bottom: 0.3rem; }
+    .order-card .label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.45); margin-top: 0.8rem; }
+    .status-select { padding: 0.45rem 0.8rem; border-radius: 8px; border: 1px solid rgba(207,163,58,0.3); background: rgba(255,255,255,0.06); color: #fff; font-family: inherit; font-size: 0.85rem; margin-top: 0.3rem; }
+    .status-select option { background: var(--ink); color: #fff; }
+
+    /* ===== FOOTER ===== */
+    footer { position: relative; z-index: 2; background: var(--teal-deep); color: var(--cream); padding: 3.5rem 6vw; text-align: center; }
+    footer .footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--gold-soft); }
+    footer .footer-brand span { color: var(--gold); font-style: italic; }
+    footer .contact-row { margin-top: 1rem; display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap; font-size: 0.9rem; opacity: 0.85; }
+    footer .contact-row a { color: var(--gold-soft); text-decoration: none; border-bottom: 1px solid rgba(207,163,58,0.3); transition: color 0.2s; }
+    footer .contact-row a:hover { color: #fff; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 640px) {
+      nav ul { gap: 1rem; font-size: 0.85rem; }
+      .hero h1 { font-size: 2.8rem; }
+      .cart-drawer { width: 100%; }
+      .product-showcase { gap: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- THREE.JS BACKGROUND -->
+  <canvas id="hero-canvas"></canvas>
+
+  <!-- NAV -->
+  <nav aria-label="Main navigation">
+    <a href="#" class="logo-mark" aria-label="Al Ihsan Dairies Home">
+      <img src="uploads/Al Ihsan Logo.jpg" alt="Al Ihsan Dairies Logo" onerror="this.style.display='none'; this.nextElementSibling.style.marginLeft='0';">
+      <div class="logo-text">Al Ihsan <span>Dairies</span></div>
+    </a>
+    <ul>
+      <li><a href="#product">Product</a></li>
+      <li><a href="#checkout">Order</a></li>
+      <li><a href="#admin" onclick="openAdmin()">Admin</a></li>
+      <li><a href="#" onclick="openCart(); return false;" aria-label="Open cart"><i class="fa-solid fa-cart-shopping"></i> <span id="nav-cart-count">0</span></a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero" id="hero">
+    <div class="hero-inner">
+      <div class="hero-badge"><i class="fa-solid fa-cow"></i> Hand-Churned Pure Desi Ghee</div>
+      <h1>
+        Al Ihsan <span class="gold">Dairies</span>
+        <span class="urdu-line">الحسن ڈیریز — خالص دیسی گھی</span>
+      </h1>
+      <p class="hero-sub-en">Pure. Traditional. Unmatched Quality.</p>
+      <p class="hero-sub">خالص، روایتی اور اعلیٰ معیار کا دیسی گھی</p>
+      <div class="cta-row">
+        <a href="#product" class="btn btn-filled">Discover Our Ghee</a>
+        <a href="#checkout" class="btn btn-gold">Place Order</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ABOUT / PRODUCT -->
+  <section id="product" aria-label="Product details">
+    <div class="section-header">
+      <h2>Our <span class="gold">Golden Elixir</span></h2>
+      <div class="divider-gold"></div>
+      <p class="urdu-sub">ہر قطرہ میں فطرت کا خلوص — ہر چمک میں روایتی ذائقہ</p>
+      <p style="margin-top:0.5rem; color: var(--ink-soft); font-size: 0.9rem;">Every drop holds the purity of nature — every shimmer carries tradition.</p>
+    </div>
+
+    <div class="product-showcase">
+      <div class="product-visual">
+        <img src="assets/ghee-hero.jpg" alt="Al Ihsan Dairies Pure Desi Ghee" style="object-fit: cover; height: 460px; width: 100%;">
+        <div class="visual-badge">3500 PKR / KG</div>
+      </div>
+
+      <div class="product-info">
+        <h3>Pure Desi Ghee</h3>
+        <p class="en-desc">
+          Sourced from free-grazing cows, our Desi Ghee is hand-churned using age-old methods. It carries a rich, nutty aroma, golden hue, and the kind of depth only true tradition can provide. Perfect for cooking, baking, or simply spreading over warm roti.
+        </p>
+        <p class="urdu-desc">
+          آزاد چرنے والی گائے کے دودھ سے تیار — ہمارا دیسی گھی ہاتھ سے مکھن نکال کر بنایا جاتا ہے۔ اس میں روایتی طریقہ، سنہری رنگ اور گہرا خوشبودار ذائقہ موجود ہے۔ کھانے میں پکا کر، روٹی پر لگا کر، یا مٹھائی میں استعمال کریں۔
+        </p>
+
+        <ul class="features-list" aria-label="Product features">
+          <li><i class="fa-solid fa-star"></i> Hand-Churned</li>
+          <li><i class="fa-solid fa-star"></i> No Preservatives</li>
+          <li><i class="fa-solid fa-star"></i> 100% Organic</li>
+          <li><i class="fa-solid fa-star"></i> Rich Aroma</li>
+          <li><i class="fa-solid fa-star"></i> 3500 PKR / KG</li>
+        </ul>
+
+        <div class="price-card" aria-label="Product price">
+          <div class="price-row"><span class="label">Price per KG</span> <span class="price">3500 <span class="unit">PKR</span></span></div>
+          <p class="note">Sold in kilograms. Fresh batches delivered weekly.</p>
+        </div>
+
+        <div class="cart-row">
+          <div class="qty-control" aria-label="Quantity selector">
+            <button onclick="updateQty(-1)" aria-label="Decrease quantity">−</button>
+            <span id="qty-display">1</span>
+            <button onclick="updateQty(1)" aria-label="Increase quantity">+</button>
+          </div>
+          <button class="btn btn-filled" onclick="addToCart()" aria-label="Add to cart">
+            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+          </button>
+          <a href="#checkout" class="btn btn-outline" onclick="openCheckout(); return true;" aria-label="Buy now">Buy Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECKOUT / ORDER -->
+  <section id="checkout" aria-label="Checkout and order form">
+    <div class="section-header">
+      <h2>Place Your <span class="gold">Order</span></h2>
+      <div class="divider-gold"></div>
+      <p class="urdu-sub">اپنا آرڈر ابھی دیں — خالص گھی آپ کے دروازے تک</p>
+      <p style="margin-top:0.5rem; color: var(--ink-soft); font-size: 0.9rem;">Place your order — pure ghee delivered to your doorstep.</p>
+    </div>
+
+    <div style="max-width: 720px; margin: 0 auto; background: linear-gradient(145deg, #fff 0%, var(--parchment) 100%); border-radius: 1.5rem; padding: 2.5rem; box-shadow: 0 10px 40px rgba(10,107,94,0.06); border: 1px solid rgba(207,163,58,0.12);">
+      <form class="checkout-form" id="checkoutForm" onsubmit="submitOrder(event)">
+        <label for="fullName">Full Name / مکمل نام</label>
+        <input type="text" id="fullName" name="fullName" placeholder="Your name / آپ کا نام" required>
+
+        <label for="contact">Contact Number / رابطہ نمبر</label>
+        <input type="tel" id="contact" name="contact" placeholder="0348 746 3424" required pattern="[0-9+\-\s]{8,15}">
+
+        <label for="address">Address / پتہ</label>
+        <textarea id="address" name="address" placeholder="House, street, city / مکان، گلی، شہر" required></textarea>
+
+        <label for="location">Delivery Location (Pin / Landmark) / ڈیلیوری کا مقام</label>
+        <textarea id="location" name="location" placeholder="Share Google Maps link or landmark / گوگل میپس لنک یا نشان دہی" required></textarea>
+
+        <label>Quantity (KG) / مقدار (کلو)</label>
+        <div style="display:flex; gap:0.8rem; align-items:center;">
+          <div class="qty-control" style="flex-shrink:0;">
+            <button type="button" onclick="updateCheckoutQty(-1)">−</button>
+            <span id="checkout-qty">1</span>
+            <button type="button" onclick="updateCheckoutQty(1)">+</button>
+          </div>
+          <span style="color: var(--ink-soft); font-size: 0.85rem;">Total: <strong id="checkout-total" style="color: var(--teal-deep);">3500 PKR</strong></span>
+        </div>
+
+        <label>Payment Method / ادائیگی کا طریقہ</label>
+        <div class="pay-options">
+          <button type="button" class="pay-option" onclick="selectPay(this, 'Cash on Delivery')">Cash on Delivery</button>
+          <button type="button" class="pay-option" onclick="selectPay(this, 'JazzCash')">JazzCash</button>
+          <button type="button" class="pay-option" onclick="selectPay(this, 'EasyPaisa')">EasyPaisa</button>
+          <button type="button" class="pay-option" onclick="selectPay(this, 'Raast ID')">Raast ID</button>
+        </div>
+        <input type="hidden" id="selectedPay" name="payment" value="Cash on Delivery">
+
+        <div style="margin-top: 1.2rem; padding: 1rem; background: rgba(10,107,94,0.05); border-radius: 10px; border-left: 3px solid var(--gold);">
+          <p style="font-size: 0.82rem; color: var(--ink-soft); line-height: 1.7;">
+            <strong style="color: var(--teal-deep);">JazzCash / EasyPaisa:</strong> 03487463424<br>
+            <strong style="color: var(--teal-deep);">Raast ID:</strong> 03347667999
+          </p>
+        </div>
+
+        <button type="submit" class="btn btn-gold" style="margin-top: 1.5rem; width: 100%; justify-content: center; font-size: 1.05rem; padding: 1rem;" aria-label="Place order via WhatsApp">
+          <i class="fa-brands fa-whatsapp"></i> Place Order via WhatsApp
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ADMIN PANEL -->
+  <section id="admin" aria-label="Admin panel">
+    <h2>Admin <span style="color: var(--gold); font-style: italic;">Panel</span></h2>
+    <p style="text-align:center; color:rgba(255,255,255,0.55); margin-top:0.3rem;">Manage active orders — صرف فعال آرڈرز دیکھیں</p>
+    <div class="admin-grid" id="admin-grid" aria-label="Orders list">
+      <!-- Orders injected by JS -->
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">Al Ihsan <span>Dairies</span></div>
+    <p style="margin-top:0.4rem; font-family:'Noto Nastaliq Urdu', serif; font-size:1.1rem; opacity:0.9;">الحسن ڈیریز — خالص دیسی گھی</p>
+    <div class="contact-row">
+      <a href="https://wa.me/923347667999" target="_blank" aria-label="WhatsApp">WhatsApp: 03347667999</a>
+      <span>JazzCash / EasyPaisa: 03487463424</span>
+      <span>Raast ID: 03347667999</span>
+    </div>
+    <p style="margin-top:2rem; opacity:0.4; font-size:0.75rem;">© 2026 Al Ihsan Dairies. Handcrafted with tradition.</p>
+  </footer>
+
+  <!-- CART DRAWER OVERLAY -->
+  <div id="cart-overlay" onclick="closeCart()" style="position:fixed; inset:0; background:rgba(6,69,61,0.25); z-index:190; display:none; backdrop-filter:blur(3px);"></div>
+
+  <aside class="cart-drawer" id="cart-drawer" role="dialog" aria-modal="true" aria-label="Shopping cart">
+    <div class="drawer-header">
+      <h3>Your Cart / آپ کی ٹوکری</h3>
+      <button onclick="closeCart()" aria-label="Close cart">✕</button>
+    </div>
+    <div id="cart-list"></div>
+    <div class="cart-total-row">
+      <span>Grand Total / کل رقم</span>
+      <span id="cart-grand">0 PKR</span>
+    </div>
+    <a href="#checkout" onclick="closeCart(); openCheckout(); return true;" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:1.2rem; text-decoration:none;">Proceed to Checkout</a>
+  </aside>
+
+  <script>
+    // ======================= THREE.JS BACKGROUND =======================
+    (function initThree() {
+      const canvas = document.getElementById('hero-canvas');
+      if (!canvas) return;
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const scene = new THREE.Scene();
+
+      // Soft ambient light
+      const ambient = new THREE.AmbientLight(0xffffff, 0.45);
+      scene.add(ambient);
+      const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+      dir.position.set(5, 5, 10);
+      scene.add(dir);
+
+      // Floating golden orbs
+      const orbCount = 18;
+      const orbs = [];
+      const colors = [0xcfa33a, 0x9a7528, 0xe8c776, 0x0a6b5e, 0x148f7c];
+      for (let i = 0; i < orbCount; i++) {
+        const geo = new THREE.SphereGeometry(Math.random() * 0.35 + 0.15, 16, 16);
+        const mat = new THREE.MeshStandardMaterial({
+          color: colors[Math.floor(Math.random() * colors.length)],
+          roughness: 0.25, metalness: 0.35, emissive: colors[0], emissiveIntensity: 0.15,
+          transparent: true, opacity: 0.7,
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+        mesh.userData = {
+          speedY: Math.random() * 0.008 + 0.003,
+          speedX: (Math.random() - 0.5) * 0.006,
+          rotY: Math.random() * 0.01,
+        };
+        scene.add(mesh);
+        orbs.push(mesh);
+      }
+
+      // Center decorative ring
+      const ringGeo = new THREE.TorusGeometry(1.6, 0.08, 16, 64);
+      const ringMat = new THREE.MeshStandardMaterial({ color: 0xcfa33a, roughness: 0.2, metalness: 0.5, emissive: 0x9a7528, emissiveIntensity: 0.25, transparent: true, opacity: 0.25 });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.rotation.x = Math.PI / 2.4;
+      ring.position.z = -1;
+      scene.add(ring);
+
+      const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 50);
+      camera.position.set(0, 0, 7);
+
+      const clock = new THREE.Clock();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta();
+        const t = clock.getElapsedTime();
+        orbs.forEach((o, i) => {
+          o.rotation.y += o.userData.rotY;
+          o.position.y += o.userData.speedY + Math.sin(t * 2 + i) * 0.002;
+          o.position.x += o.userData.speedX;
+          if (o.position.y > 4) o.position.y = -4;
+        });
+        ring.rotation.z += 0.003;
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    })();
+
+    // ======================= DATA & STATE =======================
+    const PRICE_PER_KG = 3500;
+    let qty = 1;
+    let cart = JSON.parse(localStorage.getItem('aih_cart') || '[]');
+    let selectedPay = 'Cash on Delivery';
+    let orders = JSON.parse(localStorage.getItem('aih_orders') || '[]');
+    // Seed demo orders for admin
+    if (orders.length === 0) {
+      orders = [
+        { id: 'ORD-001', name: 'Ahmed Khan', contact: '03451234567', address: 'House 45, Model Town, Lahore', location: 'https://maps.google.com/?q=Model+Town+Lahore', qty: 2, total: 7000, payment: 'JazzCash', status: 'packing', time: '2026-07-25 09:14' },
+        { id: 'ORD-002', name: 'Fatima Ali', contact: '03331234567', address: 'Flat 12, Clifton, Karachi', location: 'Clifton Block 5, Karachi', qty: 1, total: 3500, payment: 'Cash on Delivery', status: 'delivered', time: '2026-07-24 16:30' },
+        { id: 'ORD-003', name: 'Usman Tariq', contact: '03111223344', address: 'Sector G-11, Islamabad', location: 'G-11 Markaz, Islamabad', qty: 3, total: 10500, payment: 'Raast ID', status: 'out for delivery', time: '2026-07-25 07:45' },
+      ];
+      localStorage.setItem('aih_orders', JSON.stringify(orders));
+    }
+
+    // ======================= CART FUNCTIONS =======================
+    function updateQty(delta) {
+      qty = Math.max(1, qty + delta);
+      document.getElementById('qty-display').textContent = qty;
+    }
+    function updateCheckoutQty(delta) {
+      qty = Math.max(1, qty + delta);
+      document.getElementById('qty-display').textContent = qty;
+      document.getElementById('checkout-qty').textContent = qty;
+      document.getElementById('checkout-total').textContent = (qty * PRICE_PER_KG) + ' PKR';
+    }
+
+    function addToCart() {
+      const existing = cart.find(i => i.name === 'Pure Desi Ghee');
+      if (existing) existing.qty += qty; else cart.push({ name: 'Pure Desi Ghee', qty: qty, price: PRICE_PER_KG });
+      localStorage.setItem('aih_cart', JSON.stringify(cart));
+      renderCart();
+      openCart();
+    }
+
+    function renderCart() {
+      const list = document.getElementById('cart-list');
+      document.getElementById('nav-cart-count').textContent = cart.reduce((s, i) => s + i.qty, 0);
+      if (!cart.length) {
+        list.innerHTML = '<p style="color:var(--ink-soft); opacity:0.7; padding:1rem 0;">Your cart is empty. <a href="#product" style="color:var(--teal-deep);">Browse product</a>.</p>';
+        document.getElementById('cart-grand').textContent = '0 PKR';
+        return;
+      }
+      let html = '';
+      let grand = 0;
+      cart.forEach((item, idx) => {
+        grand += item.qty * item.price;
+        html += `
+          <div class="cart-item">
+            <img src="assets/ghee-hero.jpg" alt="${item.name}" onerror="this.style.background='#f6f0e6'; this.style.padding='8px';" style="object-fit: cover;">
+            <div class="cart-item-details" style="flex:1;">
+              <h4>${item.name}</h4>
+              <div class="qty-row">
+                <button onclick="changeCartQty(${idx}, -1)" aria-label="Decrease">−</button>
+                <span class="qty-num">${item.qty}</span>
+                <button onclick="changeCartQty(${idx}, 1)" aria-label="Increase">+</button>
+              </div>
+              <p style="font-size:0.82rem; color:var(--ink-soft); margin-top:0.25rem;">${(item.qty * item.price).toLocaleString()} PKR</p>
+            </div>
+          </div>`;
+      });
+      list.innerHTML = html;
+      document.getElementById('cart-grand').textContent = grand.toLocaleString() + ' PKR';
+    }
+
+    function changeCartQty(idx, delta) {
+      cart[idx].qty = Math.max(1, cart[idx].qty + delta);
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      localStorage.setItem('aih_cart', JSON.stringify(cart));
+      renderCart();
+    }
+
+    function openCart() { document.getElementById('cart-drawer').classList.add('open'); document.getElementById('cart-overlay').style.display = 'block'; document.body.style.overflow = 'hidden'; }
+    function closeCart() { document.getElementById('cart-drawer').classList.remove('open'); document.getElementById('cart-overlay').style.display = 'none'; document.body.style.overflow = ''; }
+
+    // ======================= CHECKOUT =======================
+    function openCheckout() {
+      qty = cart.reduce((s, i) => s + i.qty, 0);
+      document.getElementById('checkout-qty').textContent = qty || 1;
+      document.getElementById('checkout-total').textContent = ((qty || 1) * PRICE_PER_KG) + ' PKR';
+    }
+    function selectPay(btn, val) {
+      selectedPay = val;
+      document.getElementById('selectedPay').value = val;
+      document.querySelectorAll('.pay-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function submitOrder(e) {
+      e.preventDefault();
+      if (!cart.length) { alert('Cart is empty. Please add product first.'); return; }
+      const form = document.getElementById('checkoutForm');
+      const name = form.fullName.value.trim();
+      const contact = form.contact.value.trim();
+      const address = form.address.value.trim();
+      const location = form.location.value.trim();
+      const payment = document.getElementById('selectedPay').value;
+      const totalQty = qty || 1;
+      const total = totalQty * PRICE_PER_KG;
+
+      // Add to orders
+      const order = {
+        id: 'ORD-' + String(Date.now()).slice(-6),
+        name, contact, address, location, qty: totalQty, total,
+        payment, status: 'packing', time: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Karachi' })
+      };
+      orders.unshift(order);
+      localStorage.setItem('aih_orders', JSON.stringify(orders));
+      renderAdmin();
+
+      // WhatsApp message
+      const summary = `*Al Ihsan Dairies Order*\nName: ${name}\nContact: ${contact}\nAddress: ${address}\nLocation: ${location}\nQuantity: ${totalQty} KG\nTotal: ${total} PKR\nPayment: ${payment}`;
+      const waUrl = `https://wa.me/923347667999?text=${encodeURIComponent(summary)}`;
+      window.open(waUrl, '_blank');
+
+      // Clear cart
+      cart = [];
+      localStorage.setItem('aih_cart', JSON.stringify(cart));
+      renderCart();
+      alert('Order submitted! You will be redirected to WhatsApp with your summary.');
+    }
+
+    // ======================= ADMIN =======================
+    function openAdmin() {
+      document.getElementById('admin').scrollIntoView({ behavior: 'smooth' });
+      renderAdmin();
+    }
+    function renderAdmin() {
+      const grid = document.getElementById('admin-grid');
+      if (!orders.length) { grid.innerHTML = '<p style="text-align:center; opacity:0.6;">No active orders.</p>'; return; }
+      let html = '';
+      orders.forEach(o => {
+        html += `
+        <div class="order-card" aria-label="Order ${o.id}">
+          <div>
+            <h4>${o.id}</h4>
+            <p style="font-size:0.9rem; color:rgba(255,255,255,0.85);">${o.name}</p>
+            <p style="font-size:0.85rem; color:rgba(255,255,255,0.65);">${o.contact}</p>
+            <p class="label">Time / وقت</p>
+            <p style="font-size:0.82rem; color:rgba(255,255,255,0.7);">${o.time}</p>
+          </div>
+          <div>
+            <p class="label">Address / پتہ</p>
+            <p style="font-size:0.85rem; color:rgba(255,255,255,0.85);">${o.address}</p>
+            <a href="${o.location.startsWith('http') ? o.location : 'https://maps.google.com/?q=' + encodeURIComponent(o.location)}" target="_blank" style="font-size:0.8rem; color:var(--gold-soft); text-decoration:none; border-bottom:1px solid rgba(207,163,58,0.3);">Open Location</a>
+          </div>
+          <div>
+            <p class="label">Order Summary</p>
+            <p style="font-size:0.9rem; color:rgba(255,255,255,0.9);">${o.qty} KG × 3500 PKR</p>
+            <p style="font-size:1.1rem; color:var(--gold-soft); font-weight:600;">${o.total.toLocaleString()} PKR</p>
+            <p class="label">Payment</p>
+            <p style="font-size:0.85rem; color:rgba(255,255,255,0.85);">${o.payment}</p>
+          </div>
+          <div>
+            <p class="label">Status / حالت</p>
+            <select class="status-select" onchange="updateStatus('${o.id}', this.value)" aria-label="Change status for ${o.id}">
+              <option value="packing" ${o.status==='packing'?'selected':''}>Packing</option>
+              <option value="handed over to delivery service" ${o.status==='handed over to delivery service'?'selected':''}>Handed Over</option>
+              <option value="out for delivery" ${o.status==='out for delivery'?'selected':''}>Out for Delivery</option>
+              <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
+              <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
+            </select>
+          </div>
+        </div>`;
+      });
+      grid.innerHTML = html;
+    }
+    function updateStatus(id, status) {
+      orders = orders.map(o => o.id === id ? { ...o, status } : o);
+      localStorage.setItem('aih_orders', JSON.stringify(orders));
+      renderAdmin();
+    }
+
+    // ======================= INIT =======================
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCart();
+      renderAdmin();
+      // Pre-select first payment option
+      document.querySelector('.pay-option').click();
+    });
+  </script>
+</body>
+</html>

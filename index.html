@@ -224,11 +224,11 @@
         <textarea id="address" name="address" placeholder="House, street, city / مکان، گلی، شہر" required></textarea>
 
         <label for="locationField">Delivery Location / ڈیلیوری کا مقام</label>
-        <textarea id="locationField" name="locationField" placeholder="Share Google Maps link, landmark, or use the button below to capture your real-time location / گوگل میپس لنک یا نشان دہی یا نیچے بٹن سے اپنا موجودہ مقام حاصل کریں" required></textarea>
+        <textarea id="locationField" name="locationField" placeholder="Auto-filled after you capture your live location below / نیچے بٹن سے اپنا موجودہ مقام حاصل کرنے پر خود بخود بھر جائے گا" required readonly></textarea>
 
-        <div class="geo-row">
-          <button type="button" class="geo-btn" onclick="captureLocation()" aria-label="Get my current location"><i class="fa-solid fa-location-crosshairs"></i> Capture My Real-Time Location</button>
-          <span id="geo-status" class="geo-status">No location captured yet</span>
+        <div class="geo-row" style="flex-direction:column;align-items:flex-start;">
+          <button type="button" class="geo-btn" id="capture-loc-btn" onclick="captureLocation()" aria-label="Get my current location"><i class="fa-solid fa-location-crosshairs"></i> Capture My Real-Time Location <span style="color:#b23b3b;">*</span></button>
+          <span id="geo-status" class="geo-status" style="margin-top:0.5rem;">Required — tap above to capture your exact location before ordering</span>
         </div>
         <input type="hidden" id="geoLat" name="geoLat">
         <input type="hidden" id="geoLng" name="geoLng">
@@ -385,29 +385,73 @@
     function closeCart(){document.getElementById('cart-drawer').classList.remove('open'); document.getElementById('cart-overlay').style.display='none'; document.body.style.overflow='';}
 
     // ======================= REAL-TIME GEO =======================
+    const GEO_ACCURACY_TARGET = 20; // meters
+    const GEO_MAX_WAIT_MS = 25000;
+    let geoWatchId = null;
+    let geoSettleTimer = null;
+
     function captureLocation(){
       const status=document.getElementById('geo-status');
+      const btn=document.getElementById('capture-loc-btn');
       if(!navigator.geolocation){status.textContent="Geolocation not supported by this browser"; return;}
-      status.textContent="Getting your location...";
-      navigator.geolocation.getCurrentPosition(
+      if(geoWatchId!==null){ navigator.geolocation.clearWatch(geoWatchId); geoWatchId=null; }
+      if(geoSettleTimer){ clearTimeout(geoSettleTimer); geoSettleTimer=null; }
+
+      geoData={lat:null,lng:null,address:'',captured:false,accuracy:null};
+      btn.disabled=true; btn.style.opacity='0.7';
+      status.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Getting your precise location…';
+
+      let bestAccuracy=Infinity;
+
+      const finish=()=>{
+        if(geoWatchId!==null){ navigator.geolocation.clearWatch(geoWatchId); geoWatchId=null; }
+        if(geoSettleTimer){ clearTimeout(geoSettleTimer); geoSettleTimer=null; }
+        btn.disabled=false; btn.style.opacity='1';
+        if(geoData.lat===null){
+          status.textContent='Could not get your location. Please try again in an open area.';
+          return;
+        }
+        geoData.captured=true;
+        const accTxt = geoData.accuracy!=null ? ` (±${Math.round(geoData.accuracy)}m)` : '';
+        status.innerHTML=`<i class="fa-solid fa-check-circle" style="color:var(--teal-deep);"></i> Location captured${accTxt}`;
+        const url=`https://nominatim.openstreetmap.org/reverse?lat=${geoData.lat}&lon=${geoData.lng}&format=json`;
+        fetch(url, {headers:{'Accept-Language':'en'}})
+          .then(r=>r.json()).then(data=>{
+            geoData.address=data.display_name||`Lat: ${geoData.lat.toFixed(5)}, Lng: ${geoData.lng.toFixed(5)}`;
+          }).catch(()=>{
+            geoData.address=`Lat: ${geoData.lat.toFixed(5)}, Lng: ${geoData.lng.toFixed(5)}`;
+          }).finally(()=>{
+            document.getElementById('locationField').value=geoData.address;
+            document.getElementById('geoLat').value=geoData.lat;
+            document.getElementById('geoLng').value=geoData.lng;
+            document.getElementById('geoAddress').value=geoData.address;
+          });
+      };
+
+      geoWatchId = navigator.geolocation.watchPosition(
         (pos)=>{
-          geoData.lat=pos.coords.latitude; geoData.lng=pos.coords.longitude; geoData.captured=true;
-          const url=`https://nominatim.openstreetmap.org/reverse?lat=${geoData.lat}&lon=${geoData.lng}&format=json`;
-          fetch(url, {headers:{'Accept-Language':'en'}})
-            .then(r=>r.json()).then(data=>{
-              geoData.address=data.display_name||`Lat: ${geoData.lat.toFixed(5)}, Lng: ${geoData.lng.toFixed(5)}`;
-            }).catch(()=>{
-              geoData.address=`Lat: ${geoData.lat.toFixed(5)}, Lng: ${geoData.lng.toFixed(5)}`;
-            }).finally(()=>{
-              document.getElementById('locationField').value=geoData.address; document.getElementById('geoLat').value=geoData.lat; document.getElementById('geoLng').value=geoData.lng; document.getElementById('geoAddress').value=geoData.address;
-              status.innerHTML='<i class="fa-solid fa-check-circle" style="color:var(--teal-deep);"></i> Location captured';
-            });
+          const acc=pos.coords.accuracy;
+          if(acc<bestAccuracy){
+            bestAccuracy=acc;
+            geoData.lat=pos.coords.latitude; geoData.lng=pos.coords.longitude; geoData.accuracy=acc;
+          }
+          if(acc<=GEO_ACCURACY_TARGET){
+            finish();
+          } else {
+            status.innerHTML=`<i class="fa-solid fa-triangle-exclamation" style="color:var(--gold-deep);"></i> Accuracy ±${Math.round(acc)}m — move your phone slowly in a figure-8 pattern for a few seconds to improve GPS accuracy…`;
+          }
         },
         (err)=>{
-          status.textContent=`Location error: ${err.message}`;
+          if(geoSettleTimer){ clearTimeout(geoSettleTimer); geoSettleTimer=null; }
+          if(geoWatchId!==null){ navigator.geolocation.clearWatch(geoWatchId); geoWatchId=null; }
+          btn.disabled=false; btn.style.opacity='1';
+          status.textContent=`Location error: ${err.message}. Please allow location access and try again.`;
         },
-        {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+        {enableHighAccuracy:true,timeout:GEO_MAX_WAIT_MS,maximumAge:0}
       );
+
+      // If we never hit the accuracy target, settle for the best reading we got.
+      geoSettleTimer=setTimeout(()=>{ finish(); }, GEO_MAX_WAIT_MS);
     }
 
     // ======================= CHECKOUT =======================
@@ -421,6 +465,13 @@
       const name=form.fullName.value.trim(); const contact=form.contact.value.trim(); const address=form.address.value.trim();
       const location=form.locationField.value.trim(); const payment=document.getElementById('selectedPay').value;
       const feedback=document.getElementById('order-feedback'); const submitBtn=document.getElementById('submit-order-btn');
+
+      if(!geoData.captured || geoData.lat===null){
+        feedback.style.color='#b23b3b';
+        feedback.textContent='Please tap "Capture My Real-Time Location" and wait for it to finish before placing your order.';
+        document.getElementById('geo-status').scrollIntoView({behavior:'smooth', block:'center'});
+        return;
+      }
 
       const client=getClient();
       if(!client){ feedback.textContent='Could not connect to the order system. Please try again.'; feedback.style.color='#b23b3b'; return; }
